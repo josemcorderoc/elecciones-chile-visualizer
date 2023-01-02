@@ -1,15 +1,14 @@
 <script lang="ts">
   import ElectoralMap from './lib/components/ElectoralMap/ElectoralMap.svelte';
-  import data from "./assets/test_votes.json";
-  console.log(data);
-
-  
+  import Form from './lib/components/Form/Form.svelte'
+  import { selectedElectionOutcomes } from './lib/state';
 </script>
 
 <main>
   <h1>Elecciones Chile Visualizer</h1>
-
-  <ElectoralMap data={data.data} territorio={"comuna"} entidad={"candidato"}/>
+  
+  <Form/>
+  <ElectoralMap bind:data={$selectedElectionOutcomes}/>
 
 </main>
 
