@@ -1,5 +1,53 @@
 import type { FeatureCollection } from "geojson";
-import type { ResultadoEleccion } from "../../types/electoral";
+import L from "leaflet";
+import { comunaNames, comunas, viridis } from "../../constants";
+import type { ElectionOutcome } from "../../types";
+import { jenks } from 'simple-statistics'
+
+
+function getColor(votes: number, colorScale) {
+    for (let i = 0; i < colorScale.length; i++) {
+        const interval = colorScale[i];
+        if (votes <= interval.max) {
+            return interval.color;
+        }   
+    }
+    throw new Error(`Could not find color for value ${votes}.`);
+}
+
+function getStyle(electionData: ElectionOutcome[]) {
+
+    const colorScale = generateColorScale(electionData);
+
+    return feature => ({
+        fillColor:  getColor(feature.properties.votos, colorScale),
+        weight: 2,
+        opacity: 1,
+        color: "white",
+        dashArray: "3",
+        fillOpacity: 0.7,
+});
+}
+
+export function getLegend(electionData) {
+    const colorScale = generateColorScale(electionData);
+    const legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (map) {
+        const div = L.DomUtil.create('div', 'info legend');
+        const labels = [];
+        for (let i = 0; i < colorScale.length; i++) {
+            const { color, min, max } = colorScale[i];
+            // const min = interval.min.toLocaleString('es-CL')
+            // const max = interval.max.toLocaleString('es-CL')
+            labels.push(`<i style="background:${color}"></i> ${min.toLocaleString('es-CL')}${min != max ? `&ndash;${max.toLocaleString('es-CL')}` : ''}`);
+        }
+        div.innerHTML = labels.join('<br>');
+        return div;
+    };
+    return legend
+}
+
 
 /**
  * 
@@ -7,41 +55,47 @@ import type { ResultadoEleccion } from "../../types/electoral";
  * @param electionData Votes of candidates in an election by commune
  * @returns 
  */
-export function getVotesComunasGeoJSON(comunas: FeatureCollection, electionData: ResultadoEleccion[]) {
-    // TODO filter comunas using data
-    let uniqueComunas = new Set(electionData.map((resultado) => resultado.comuna));
-    
-    let comunasToMap = comunas.features.filter((comuna) =>
-        uniqueComunas.has(comuna.properties.cod_comuna)
-    );
+export function getVotesComunasGeoJSON(electionData: ElectionOutcome[]) {
+    if (electionData.length == 0) return L.geoJSON();
 
-    // add votes into comunas and return
-    comunasToMap.forEach(
-        (comuna) =>
-            (comuna.properties.votos = electionData.find(
-                (result) => result.comuna == comuna.properties.cod_comuna
-            ).votos)
-    );
+    const comunasToMap = [];
+    for (const outcome of electionData) {
+        let comunaMatch = comunas.features.find(comuna => comuna.properties.nombre == outcome.comuna);
+        if (comunaMatch) {
+            comunaMatch = Object.assign({}, comunaMatch);
+            comunaMatch.properties.votos = outcome.votes;
+            comunasToMap.push(comunaMatch);
+        }
 
-    return comunasToMap;
+    }   
+    const style = getStyle(electionData)
+    return L.geoJSON(comunasToMap, {style});
 }
 
-function generateColorScale(electionData: ResultadoEleccion[]) {
-    return function getColor(d) {
-        return d > 1000
-            ? "#800026"
-            : d > 500
-            ? "#BD0026"
-            : d > 200
-            ? "#E31A1C"
-            : d > 100
-            ? "#FC4E2A"
-            : d > 50
-            ? "#FD8D3C"
-            : d > 20
-            ? "#FEB24C"
-            : d > 10
-            ? "#FED976"
-            : "#FFEDA0";
+function generateColorScale(electionData: ElectionOutcome[]) {
+    if (electionData.length == 0) return [];
+
+    const votes = electionData.map(e => e.votes);
+    const nClasses = Math.min(electionData.length, 5);
+    const classBreaks = jenks(votes, nClasses);
+    const maxBreak = classBreaks.at(-2);
+    const breaksColors = [];
+
+    for (let i = 0; i < nClasses; i++) {
+        const perc = Math.floor(classBreaks[i]*100.0/maxBreak);
+        
+        const interval = {
+            min: classBreaks[i],
+            max: classBreaks[i+1],
+            color: viridis[perc]
+        }
+
+        if (i < nClasses - 1) {
+            interval.max--;
+        }
+
+        breaksColors.push(interval)
     }
+
+    return breaksColors;
 }

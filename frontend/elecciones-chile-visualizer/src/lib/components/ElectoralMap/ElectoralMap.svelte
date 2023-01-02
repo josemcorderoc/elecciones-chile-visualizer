@@ -1,57 +1,18 @@
 <script lang="ts">
-    // Input: geojson que contiene comunas, votos, tyle
     import L from "leaflet";
-    import type { FeatureCollection } from "geojson";
-    import comunas_chile from "../../../assets/comunas.json";
-    import type { ResultadoEleccion } from "../../types/electoral";
+    import type { ElectionOutcome } from "../../types";
+    import { getLegend, getVotesComunasGeoJSON } from "./electoralMap";
+    import { selectedElectionNames } from "../../state";
 
-    import { getVotesComunasGeoJSON } from "./electoralMap";
+    export let data: ElectionOutcome[] = [];
+    // export let territorio, entidad: string;
+    
+    let initialView = L.latLng(-33.43785, -70.65049);
 
+    function initMap(node: HTMLElement, data) {
 
-    // export let comunas: FeatureCollection;
-    export let data: ResultadoEleccion[];
-    export let territorio, entidad: string;
-
-    let comunasToMap = getVotesComunasGeoJSON(<FeatureCollection>comunas_chile, data);
-        console.log(comunasToMap);
-        
-    // TODO use color types
-    // export let colorScale: (votes: number) => string;
-    function getColor(d) {
-        return d > 1000
-            ? "#800026"
-            : d > 500
-            ? "#BD0026"
-            : d > 200
-            ? "#E31A1C"
-            : d > 100
-            ? "#FC4E2A"
-            : d > 50
-            ? "#FD8D3C"
-            : d > 20
-            ? "#FEB24C"
-            : d > 10
-            ? "#FED976"
-            : "#FFEDA0";
-    }
-
-    function style(feature) {
-        return {
-            fillColor: getColor(feature.properties.votos),
-            weight: 2,
-            opacity: 1,
-            color: "white",
-            dashArray: "3",
-            fillOpacity: 0.7,
-        };
-    }
-
-    // initialize map
-
-    let initialView = L.latLng(51.505, -0.09);
-
-    function initMap(node: HTMLElement) {
-        let map = L.map(node).setView(initialView, 15);
+        let geojson1 = getVotesComunasGeoJSON(data);
+        let map = L.map(node).setView(initialView, 10);
 
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
@@ -70,15 +31,18 @@
             },
             update: function (props) {
                 const contents = props
-                    ? `<b>${props.Comuna}</b><br />${props.votos} votos`
-                    : "Hover over a state";
-                this._div.innerHTML = `<h4>Elección X</h4>${contents}`;
+                    ? `<b>${props.nombre}</b><br />${props.votos.toLocaleString('es-CL')} votos`
+                    : "Pasa el cursor sobre una comuna";
+                const eleccion = props ? `<h4>Elección ${$selectedElectionNames[0]}</h4>` : "";
+                this._div.innerHTML = `${eleccion}${contents}`;
             },
         });
 
         let control = new myControl();
         control.addTo(map);
 
+        let legend = getLegend(data);
+        legend.addTo(map);
 
         function highlightFeature(e) {
             const layer = e.target;
@@ -96,50 +60,72 @@
         }
 
         /* global statesData */
-        const geojson = L.geoJSON(comunasToMap, {style, onEachFeature});
+                
+        if (data.length > 0) {
+            geojson1.addTo(map);
+            map.fitBounds(geojson1.getBounds());
 
-        geojson.addTo(map);
-        map.fitBounds(geojson.getBounds());
-        function resetHighlight(e) {
-            geojson.resetStyle(e.target);
-            control.update();
-        }
-
-        function zoomToFeature(e) {
-            map.fitBounds(e.target.getBounds());
-        }
-
-        function onEachFeature(feature, layer) {
-            layer.on({
-                mouseover: highlightFeature,
-                mouseout: resetHighlight,
-                click: zoomToFeature
-            });
-        }
-
-        map.attributionControl.addAttribution('Population data &copy; <a href="http://census.gov/">Servicio Electoral de Chile (Servel)</a>');
-
-        const legend = L.control({position: 'bottomright'});
-
-        legend.onAdd = function (map) {
-
-            const div = L.DomUtil.create('div', 'info legend');
-            const grades = [0, 10, 20, 50, 100, 200, 500, 1000];
-            const labels = [];
-            let from, to;
-
-            for (let i = 0; i < grades.length; i++) {
-                from = grades[i];
-                to = grades[i + 1];
-
-                labels.push(`<i style="background:${getColor(from + 1)}"></i> ${from}${to ? `&ndash;${to}` : '+'}`);
+            function resetHighlight(e) {
+                geojson1.resetStyle(e.target);
+                control.update();
             }
 
-            div.innerHTML = labels.join('<br>');
-            return div;
-        };
+            function zoomToFeature(e) {
+                map.fitBounds(e.target.getBounds());
+            }
 
-        legend.addTo(map);
+            geojson1.eachLayer(function(layer) {
+                layer.on({
+                    mouseover: highlightFeature,
+                    mouseout: resetHighlight,
+                    click: zoomToFeature
+                });
+            })
+
+        }
+       
+        map.attributionControl.addAttribution('Fuente: <a href="https://www.servel.cl/">Servicio Electoral de Chile (Servel)</a>');
+
+        
+        return {
+			update(data) {
+                geojson1.removeFrom(map);
+                geojson1 = getVotesComunasGeoJSON(data);
+
+                map.removeControl(legend);
+                
+
+
+                if (data.length > 0) {
+                    geojson1.addTo(map);
+                    map.fitBounds(geojson1.getBounds());
+                    
+                    legend = getLegend(data);
+                    legend.addTo(map)
+
+                    function resetHighlight(e) {
+                        geojson1.resetStyle(e.target);
+                        control.update();
+                    }
+
+                    function zoomToFeature(e) {
+                        map.fitBounds(e.target.getBounds());
+                    }
+
+                    geojson1.eachLayer(function(layer) {
+                        layer.on({
+                            mouseover: highlightFeature,
+                            mouseout: resetHighlight,
+                            click: zoomToFeature
+                        });
+                    })
+                }
+			},
+
+			destroy() {
+				// the node has been removed from the DOM
+			}
+		};
     }
 </script>
 
@@ -152,11 +138,12 @@
     />
 </svelte:head>
 
-<div id="map" use:initMap />
+<div id="map" use:initMap={data} />
 
 <style>
     #map {
         height: 500px;
+        /* z-index: -1; */
     }
     div :global(.info) {
         padding: 6px 8px;
@@ -170,12 +157,12 @@
         margin: 0 0 5px;
         color: #777;
     }
-    .legend {
-        text-align: left;
+
+    div :global(.legend) {
         line-height: 18px;
         color: #555;
     }
-    .legend i {
+    div :global(.legend i) {
         width: 18px;
         height: 18px;
         float: left;
