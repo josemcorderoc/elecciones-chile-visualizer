@@ -26,6 +26,7 @@
     "leaflet": "^1.9.3",
     "simple-statistics": "^7.8.0",
     "sql.js": "^1.8.0",
+    "svelte-switch": "^0.0.5",
     "svelte-tags-input": "^4.0.0"
   }
 }

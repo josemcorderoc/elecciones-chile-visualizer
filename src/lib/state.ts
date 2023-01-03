@@ -5,6 +5,11 @@ import type { ElectionOutcome } from './types';
 export const selectedElectionNames = writable<string[]>([]);
 export const selectedCandidateNames = writable<string[]>([]);
 export const selectedComunaNames = writable<string[]>([]);
+export const percentageResults =writable<boolean>(false);
+
+export const resultsType = derived(
+    percentageResults, $p => $p ? "%" : "votos"
+)
 
 export const candidateNamesAutocomplete = derived(
     [selectedElectionNames, selectedComunaNames],
@@ -12,8 +17,8 @@ export const candidateNamesAutocomplete = derived(
 );
 
 export const selectedElectionOutcomes = derived(
-    [selectedElectionNames, selectedComunaNames, selectedCandidateNames],
-    ([$a, $b, $c]) => getElectionOutcomes($a, $b, $c)
+    [selectedElectionNames, selectedComunaNames, selectedCandidateNames, resultsType],
+    ([$a, $b, $c, $d]) => getElectionOutcomes($a, $b, $c, $d)
 );
 
 export function getCandidateNames(
@@ -37,13 +42,14 @@ export function getCandidateNames(
 function getElectionOutcomes(
     selectedElections: string[],
     selectedComunas: string[],
-    selectedCandidates: string[]
+    selectedCandidates: string[],
+    resultsType: string
 ): ElectionOutcome[] {
     const outcomes = [];
     for (const electionName of selectedElections) {
         for (const comunaName of selectedComunas) {
             for (const candidateName of selectedCandidates) {
-                let votes = elections[electionName][comunaName][candidateName];
+                let votes = elections[electionName][comunaName][candidateName][resultsType];
                 if (votes) {
                     outcomes.push({
                         election: electionName,
