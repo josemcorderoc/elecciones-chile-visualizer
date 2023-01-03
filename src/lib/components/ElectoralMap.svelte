@@ -1,8 +1,8 @@
 <script lang="ts">
     import L from "leaflet";
-    import type { ElectionOutcome } from "../../types";
+    import type { ElectionOutcome } from "../types";
     import { getLegend, getVotesComunasGeoJSON } from "./electoralMap";
-    import { selectedElectionNames } from "../../state";
+    import { selectedElectionNames } from "../state";
 
     export let data: ElectionOutcome[] = [];
     // export let territorio, entidad: string;

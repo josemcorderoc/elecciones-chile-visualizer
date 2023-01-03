@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ElectoralMap from './lib/components/ElectoralMap/ElectoralMap.svelte';
-  import Form from './lib/components/Form/Form.svelte'
+  import ElectoralMap from './lib/components/ElectoralMap.svelte';
+  import Form from './lib/components/Form.svelte'
   import { selectedElectionOutcomes } from './lib/state';
 </script>
 

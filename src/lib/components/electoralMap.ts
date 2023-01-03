@@ -1,7 +1,7 @@
 import type { FeatureCollection } from "geojson";
 import L from "leaflet";
-import { comunaNames, comunas, viridis } from "../../constants";
-import type { ElectionOutcome } from "../../types";
+import { comunaNames, comunas, viridis } from "../constants";
+import type { ElectionOutcome } from "../types";
 import { jenks } from 'simple-statistics'
 
 
