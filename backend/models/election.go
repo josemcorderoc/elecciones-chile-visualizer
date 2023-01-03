@@ -17,7 +17,7 @@ type ElectionOutcome struct {
 func InitPostgresDB(database string, user string, password string) (*sqlx.DB, error) {
 	return sqlx.Open(
 		"postgres",
-		fmt.Sprintf("user=%s dbname=%s sslmode=disable", user, database),
+		fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, database),
 	)
 }
 func FindOutcomeElectionCandidateComunas(electionID int, candidateID int, comunaIDs []int, db *sqlx.DB) ([]ElectionOutcome, error) {
