@@ -4,16 +4,13 @@
     import { getVotesComunasGeoJSON } from "./electoralMap";
     import { selectedElectionNames } from "../state";
     import { generateColorScale } from "../colorScale";
+    import { formatVotes } from "../utils";
 
     export let data: ElectionOutcome[] = [];
     export let percentageResults: boolean;
+    $: colorScale = generateColorScale(data.map(e => e.votes));
     let map: L.Map;
 
-    function formatVotes(votes: number) {
-        return percentageResults
-                ? (votes * 100).toLocaleString("es-CL") + "%"
-                : votes.toLocaleString("es-CL");
-    }
     const hoverControl = L.Control.extend({
             onAdd: function (map) {
                 this._div = L.DomUtil.create("div", "info");
@@ -23,36 +20,32 @@
             update: function (props) {
                 let hoverLabel = "Pasa el cursor sobre una comuna";
                 if (props) {
-                    const votesDisplay = percentageResults
-                        ? formatVotes(props.votos)
-                        : formatVotes(props.votos) + " votos";
-
                     hoverLabel = `<h4>Elección ${$selectedElectionNames[0]}</h4>
                                   <b>${props.nombre}</b>
                                   <br />
-                                  ${votesDisplay}`;
+                                  ${formatVotes(props.votos, percentageResults, true)}`;
                 }
                 this._div.innerHTML = hoverLabel;
             },
     });
 
-    export function getLegend(electionData) {
-        const colorScale = generateColorScale(electionData.map(e => e.votes));
-        const legend = L.control({position: 'bottomright'});
-
-        legend.onAdd = function (map) {
-            const div = L.DomUtil.create('div', 'info legend');
+    const legendControl = L.Control.extend({
+        onAdd: function (map) {
+            this._div = L.DomUtil.create('div', 'info legend');
             const labels = [];
             for (let i = 0; i < colorScale.length; i++) {
                 const { color, min, max } = colorScale[i];
                 const colorSquare = `<i style="background:${color}"></i>`;
-                labels.push(`${colorSquare} ${formatVotes(min)}${min != max ? `&ndash;${formatVotes(max)}` : ''}`);
+                let votesLabel = formatVotes(min, percentageResults, percentageResults);
+                if (min != max) {
+                    votesLabel += `&ndash;${formatVotes(max, percentageResults, percentageResults)}`
+                }
+                labels.push(`${colorSquare} ${votesLabel}`);
             }
-            div.innerHTML = labels.join('<br>');
-            return div;
-        };
-        return legend
-    }
+            this._div.innerHTML = labels.join('<br>');
+            return this._div;
+        }
+    });
 
     function removeMapItems(map, geojson, legend) {
         if (legend) map.removeControl(legend);
@@ -62,16 +55,16 @@
     function renderElectionOutcome(data, map, hover) {
         if (data.length == 0) return [null, null, null];
 
-        let geojson1 = getVotesComunasGeoJSON(data);
-        geojson1.addTo(map);
+        const comunasGeoJSON = getVotesComunasGeoJSON(data);
+        comunasGeoJSON.addTo(map);
         
-        map.fitBounds(geojson1.getBounds());
+        map.fitBounds(comunasGeoJSON.getBounds());
       
-        let legend = getLegend(data);
+        const legend = new legendControl({position: 'bottomright'});
         legend.addTo(map);
 
         function resetHighlight(e) {
-            geojson1.resetStyle(e.target);
+            comunasGeoJSON.resetStyle(e.target);
             hover.update();
         }
 
@@ -92,7 +85,7 @@
             hover.update(layer.feature.properties);
         }
 
-        geojson1.eachLayer(function (layer) {
+        comunasGeoJSON.eachLayer(function (layer) {
             layer.on({
                 mouseover: highlightFeature,
                 mouseout: resetHighlight,
@@ -100,7 +93,7 @@
             });
         });
 
-        return [geojson1, legend];
+        return [comunasGeoJSON, legend];
     }
 
     function initMap(node: HTMLElement, data) {
@@ -120,15 +113,15 @@
         const hover = new hoverControl();
         hover.addTo(map);
 
-        let [geojson1, legend] = renderElectionOutcome(data, map, hover);
+        let [comunasGeoJSON, legend] = renderElectionOutcome(data, map, hover);
 
         return {
             update(data) {
-                removeMapItems(map, geojson1, legend);
-                [geojson1, legend] = renderElectionOutcome(data, map, hover);
+                removeMapItems(map, comunasGeoJSON, legend);
+                [comunasGeoJSON, legend] = renderElectionOutcome(data, map, hover);
             },
             destroy() {
-                removeMapItems(map, geojson1, legend);
+                removeMapItems(map, comunasGeoJSON, legend);
                 map.off();
                 map.remove();
             },
@@ -177,5 +170,3 @@
         opacity: 0.7;
     }
 </style>
-
-
