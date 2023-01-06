@@ -1,11 +1,11 @@
 import { writable, derived } from 'svelte/store';
 import { elections } from './constants';
 import type { ElectionOutcome } from './types';
- 
+
 export const selectedElectionNames = writable<string[]>([]);
 export const selectedCandidateNames = writable<string[]>([]);
 export const selectedComunaNames = writable<string[]>([]);
-export const percentageResults =writable<boolean>(false);
+export const percentageResults = writable<boolean>(false);
 
 export const resultsType = derived(
     percentageResults, $p => $p ? "%" : "votos"
@@ -49,8 +49,9 @@ function getElectionOutcomes(
     for (const electionName of selectedElections) {
         for (const comunaName of selectedComunas) {
             for (const candidateName of selectedCandidates) {
-                let votes = elections[electionName][comunaName][candidateName][resultsType];
-                if (votes) {
+                if (((electionName in elections)) && ((comunaName in elections[electionName]))
+                    && ((candidateName in elections[electionName][comunaName]))) {
+                    let votes = elections[electionName][comunaName][candidateName][resultsType];
                     outcomes.push({
                         election: electionName,
                         comuna: comunaName,
@@ -58,7 +59,6 @@ function getElectionOutcomes(
                         votes: votes
                     });
                 }
-                
             }
         }
     }
