@@ -1,66 +1,39 @@
 <script lang="ts">
     import L from "leaflet";
     import type { ElectionOutcome } from "../types";
-    import { getVotesComunasGeoJSON } from "./electoralMap";
-    import { selectedElectionNames } from "../state";
+    import { colorPalette, selectedElectionNames } from "../state";
     import { generateColorScale } from "../colorScale";
-    import { formatVotes } from "../utils";
+    import { createMapHoverInfo, createMapLegend, getFeatureStyle, getVotesComunasGeoJSON } from "./mapUtils";
 
     export let data: ElectionOutcome[] = [];
     export let percentageResults: boolean;
-    $: colorScale = generateColorScale(data.map(e => e.votes));
+
     let map: L.Map;
 
-    const hoverControl = L.Control.extend({
-            onAdd: function (map) {
-                this._div = L.DomUtil.create("div", "info");
-                this.update();
-                return this._div;
-            },
-            update: function (props) {
-                let hoverLabel = "Pasa el cursor sobre una comuna";
-                if (props) {
-                    hoverLabel = `<h4>Elección ${$selectedElectionNames[0]}</h4>
-                                  <b>${props.nombre}</b>
-                                  <br />
-                                  ${formatVotes(props.votos, percentageResults, true)}`;
-                }
-                this._div.innerHTML = hoverLabel;
-            },
-    });
+    $: mapParams = {
+        data,
+        percentageResults: percentageResults,
+        colorScale: generateColorScale(data.map(e => e.votes), $colorPalette)
+    }
 
-    const legendControl = L.Control.extend({
-        onAdd: function (map) {
-            this._div = L.DomUtil.create('div', 'info legend');
-            const labels = [];
-            for (let i = 0; i < colorScale.length; i++) {
-                const { color, min, max } = colorScale[i];
-                const colorSquare = `<i style="background:${color}"></i>`;
-                let votesLabel = formatVotes(min, percentageResults, percentageResults);
-                if (min != max) {
-                    votesLabel += `&ndash;${formatVotes(max, percentageResults, percentageResults)}`
-                }
-                labels.push(`${colorSquare} ${votesLabel}`);
-            }
-            this._div.innerHTML = labels.join('<br>');
-            return this._div;
-        }
-    });
-
-    function removeMapItems(map, geojson, legend) {
+    function removeMapItems(map, geojson, legend, hover) {
         if (legend) map.removeControl(legend);
+        if (hover) map.removeControl(hover);
         if (geojson) geojson.removeFrom(map);
     }
 
-    function renderElectionOutcome(data, map, hover) {
-        if (data.length == 0) return [null, null, null];
+    function renderElectionOutcome(params, map) {
+        if (params.data.length == 0) return [null, null, null];
 
-        const comunasGeoJSON = getVotesComunasGeoJSON(data);
+        const comunasGeoJSON = getVotesComunasGeoJSON(params.data, params.colorScale);
         comunasGeoJSON.addTo(map);
         
         map.fitBounds(comunasGeoJSON.getBounds());
-      
-        const legend = new legendControl({position: 'bottomright'});
+        
+        const hover = createMapHoverInfo($selectedElectionNames[0], percentageResults);
+        hover.addTo(map);
+        // const legend = new legendControl({position: 'bottomright'});
+        const legend = createMapLegend(percentageResults, params.colorScale)
         legend.addTo(map);
 
         function resetHighlight(e) {
@@ -93,10 +66,10 @@
             });
         });
 
-        return [comunasGeoJSON, legend];
+        return [comunasGeoJSON, legend, hover];
     }
 
-    function initMap(node: HTMLElement, data) {
+    function initMap(node: HTMLElement, params) {
         let initialView = L.latLng(-33.43785, -70.65049);
         map = L.map(node).setView(initialView, 10);
 
@@ -110,18 +83,15 @@
             'Datos electorales: <a href="https://www.servel.cl/">Servicio Electoral de Chile (Servel)</a>'
         );
 
-        const hover = new hoverControl();
-        hover.addTo(map);
-
-        let [comunasGeoJSON, legend] = renderElectionOutcome(data, map, hover);
+        let [comunasGeoJSON, legend, hover] = renderElectionOutcome(params, map);
 
         return {
-            update(data) {
-                removeMapItems(map, comunasGeoJSON, legend);
-                [comunasGeoJSON, legend] = renderElectionOutcome(data, map, hover);
+            update(params) {
+                removeMapItems(map, comunasGeoJSON, legend, hover);
+                [comunasGeoJSON, legend, hover] = renderElectionOutcome(params, map);
             },
             destroy() {
-                removeMapItems(map, comunasGeoJSON, legend);
+                removeMapItems(map, comunasGeoJSON, legend, hover);
                 map.off();
                 map.remove();
             },
@@ -138,11 +108,12 @@
     />
 </svelte:head>
 
-<div id="map" use:initMap={data} />
+<div id="map" use:initMap={mapParams} />
 
 <style>
     #map {
         height: 500px;
+        text-align: center;
         /* z-index: -1; */
     }
     div :global(.info) {
