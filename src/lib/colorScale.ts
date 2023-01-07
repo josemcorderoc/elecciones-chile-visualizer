@@ -1,8 +1,7 @@
 import { jenks } from 'simple-statistics';
-import { viridis } from './constants';
 import type { ColorClass } from './types';
 
-export function generateColorScale(values: number[], maxClasses: number = 5): ColorClass[] {
+export function generateColorScale(values: number[], colorPalette, maxClasses: number = 5): ColorClass[] {
     if (values.length == 0) return [];
 
     const nClasses = Math.min(values.length, maxClasses);
@@ -16,7 +15,7 @@ export function generateColorScale(values: number[], maxClasses: number = 5): Co
         breaksColors.push({
             min: classBreaks[i],
             max: nClasses == values.length ? classBreaks[i] : classBreaks[i+1],
-            color: viridis[perc]
+            color: colorPalette[perc]
         })
     }
 

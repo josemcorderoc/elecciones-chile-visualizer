@@ -1,6 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { elections } from './constants';
 import type { ElectionOutcome } from './types';
+import colormap from 'colormap';
 
 export const selectedElectionNames = writable<string[]>([]);
 export const selectedCandidateNames = writable<string[]>([]);
@@ -20,6 +21,17 @@ export const selectedElectionOutcomes = derived(
     [selectedElectionNames, selectedComunaNames, selectedCandidateNames, resultsType],
     ([$a, $b, $c, $d]) => getElectionOutcomes($a, $b, $c, $d)
 );
+
+export const colorPaletteName = writable("viridis");
+
+export const colorPalette = derived(
+    colorPaletteName, $cp => colormap({colormap: $cp, nshades: 101})
+);
+
+
+
+
+
 
 export function getCandidateNames(
     selectedElectionNames: string[],
