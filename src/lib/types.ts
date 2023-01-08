@@ -5,7 +5,10 @@ export type ElectionOutcome = {
     votes: number
 }
 
-export type Votes = number;
+export type Votes = {
+    "%": number,
+    "votos": number
+};
 
 export type Candidates = {
     [key: string]: Votes
@@ -17,4 +20,10 @@ export type Comunas = {
   
 export type Elections = {
     [key: string]: Comunas
+}
+
+export type ColorClass = {
+    min: number,
+    max: number,
+    color: string
 }
