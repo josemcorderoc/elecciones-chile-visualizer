@@ -4,9 +4,11 @@
     import { colorPalette, selectedElectionNames } from "../state";
     import { generateColorScale } from "../colorScale";
     import { createMapHoverInfo, createMapLegend, getFeatureStyle, getVotesComunasGeoJSON } from "./mapUtils";
+    import type { FeatureCollection } from "geojson";
 
     export let data: ElectionOutcome[] = [];
     export let percentageResults: boolean;
+    export let comunas: FeatureCollection;
 
     let map: L.Map;
 
@@ -25,7 +27,7 @@
     function renderElectionOutcome(params, map) {
         if (params.data.length == 0) return [null, null, null];
 
-        const comunasGeoJSON = getVotesComunasGeoJSON(params.data, params.colorScale);
+        const comunasGeoJSON = getVotesComunasGeoJSON(params.data, params.colorScale, comunas);
         comunasGeoJSON.addTo(map);
         
         map.fitBounds(comunasGeoJSON.getBounds());

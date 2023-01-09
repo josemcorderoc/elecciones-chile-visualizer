@@ -1,7 +1,6 @@
 <script lang="ts">
     import Tags from "svelte-tags-input";
     import Switch from "svelte-switch";
-    import { comunaNames, electionNames } from "../constants";
     import {
         selectedElectionNames,
         selectedCandidateNames,
@@ -9,6 +8,9 @@
         candidateNamesAutocomplete,
         percentageResults,
     } from "../state";
+
+    export let electionNames: string[];
+    export let comunaNames: string[];
 </script>
 
 <div class="election-form">
