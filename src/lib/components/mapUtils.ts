@@ -1,10 +1,9 @@
 import L from "leaflet";
 import { getColor } from "../colorScale";
-import { comunas } from "../constants";
 import type { ElectionOutcome } from "../types";
 import { formatVotes } from "../utils";
 
-export function getVotesComunasGeoJSON(electionData: ElectionOutcome[], colorScale) {
+export function getVotesComunasGeoJSON(electionData: ElectionOutcome[], colorScale, comunas) {
     if (electionData.length == 0) return L.geoJSON();
 
     const comunasToMap = [];
