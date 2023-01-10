@@ -19,10 +19,10 @@
   onMount(async () => {
     let [electionsData, comunasData] = await Promise.all([
       fetch(
-        "https://elecciones-chile-visualizer.s3.sa-east-1.amazonaws.com/data/elecciones.json"
+        "https://elecciones-chile-visualizer-1.s3.sa-east-1.amazonaws.com/data/elecciones.json.gz"
       ).then((response) => response.json()),
       fetch(
-        "https://elecciones-chile-visualizer.s3.sa-east-1.amazonaws.com/data/comunas.json"
+        "https://elecciones-chile-visualizer-1.s3.sa-east-1.amazonaws.com/data/comunas.json.gz"
       ).then((response) => response.json()),
     ]);
     $elections = <Elections>electionsData;
