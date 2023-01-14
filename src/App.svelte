@@ -38,15 +38,16 @@
   <h1>Elecciones Chile Visualizer</h1>
 
   {#if loading}
+  <div class="my-2">
     <Loading />
-  {:else}
-    <Form {electionNames} {comunaNames}/>
-    <ElectoralMap
-      bind:data={$selectedElectionOutcomes}
-      bind:percentageResults={$percentageResults}
-      {comunas}
-    />
+  </div>
   {/if}
+  <Form {electionNames} {comunaNames}/>
+  <ElectoralMap
+    bind:data={$selectedElectionOutcomes}
+    bind:percentageResults={$percentageResults}
+    {comunas}
+  />
 </main>
 
 <style>
