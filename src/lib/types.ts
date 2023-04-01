@@ -27,3 +27,9 @@ export type ColorClass = {
     max: number,
     color: string
 }
+
+export type Comuna = {
+    nombre: string,
+    distrito: string,
+    region: string   
+}

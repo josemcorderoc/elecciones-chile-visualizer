@@ -8,9 +8,49 @@
         candidateNamesAutocomplete,
         percentageResults,
     } from "../state";
+    import type { Comuna } from "../types";
 
     export let electionNames: string[];
-    export let comunaNames: string[];
+    export let comunas: Comuna[] = [];
+    let selectedTerritorioNames: string[] = [];
+
+    function getTerritorios(comunasTotal: Comuna[]){        
+        const comunasMap = new Map<string, Set<string>>();
+        const distritosMap = new Map<string, Set<string>>();
+        const regionesMap = new Map<string, Set<string>>();
+
+        comunasTotal.forEach(comuna => {
+            // comunas
+            comunasMap.set(comuna.nombre, new Set([comuna.nombre]))
+
+            // distritos
+            const distrito = `Distrito ${comuna.distrito}`;
+            if (distritosMap.has(distrito)) {
+                distritosMap.get(distrito).add(comuna.nombre);
+            } else {
+                distritosMap.set(distrito, new Set([comuna.nombre]));
+            }
+
+            // regiones
+            const region = `Región ${comuna.region}`;
+            if (regionesMap.has(region)) {
+                regionesMap.get(region).add(comuna.nombre);
+            } else {
+                regionesMap.set(region, new Set([comuna.nombre]));
+            }
+        });
+        return new Map([...comunasMap, ...distritosMap, ...regionesMap]);
+    }
+    
+    
+    function getComunasNamesFromTerritorioNames(territorioNames: string[], territoriosMap: Map<string, Set<string>>) {
+        const comunas = territorioNames.map(t => territoriosMap.get(t));
+        return [...new Set(comunas.reduce((acc, curr) => [...acc, ...curr], []))];
+    }
+
+    $: territoriosMap = getTerritorios(comunas);
+    $: territorioNames = Array.from(territoriosMap.keys()).sort();
+    $: $selectedComunaNames = getComunasNamesFromTerritorioNames(selectedTerritorioNames, territoriosMap);
 </script>
 
 <div class="election-form">
@@ -28,10 +68,10 @@
 
     <div>
         <Tags
-            bind:tags={$selectedComunaNames}
-            autoComplete={comunaNames}
+            bind:tags={selectedTerritorioNames}
+            autoComplete={territorioNames}
             addKeys={[9, 13]}
-            placeholder={"Ingresa una o más comunas"}
+            placeholder={"Ingresa uno o más territorios (comunas, distritos, regiones)"}
             onlyAutocomplete
             onlyUnique
         />

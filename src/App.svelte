@@ -9,15 +9,16 @@
     percentageResults,
     elections,
   } from "./lib/state";
-  import type { Elections } from "./lib/types";
+  import type { Comuna } from "./lib/types";
 
-  let comunas: FeatureCollection;
+  let comunasFeatures: FeatureCollection;
   let comunaNames: string[];
   let electionNames: string[];
   let loading = true;
+  let comunas: Comuna[];
 
   onMount(async () => {
-    let [electionsData, comunasData] = await Promise.all([
+    [$elections, comunasFeatures] = await Promise.all([
       fetch(
         "https://elecciones-chile-visualizer-1.s3.sa-east-1.amazonaws.com/data/elecciones.json.gz"
       ).then((response) => response.json()),
@@ -25,11 +26,15 @@
         "https://elecciones-chile-visualizer-1.s3.sa-east-1.amazonaws.com/data/comunas.json.gz"
       ).then((response) => response.json()),
     ]);
-    $elections = <Elections>electionsData;
-    comunas = comunasData;
-    
+
+    comunas = comunasFeatures.features.map(c => ({
+      nombre: c.properties.nombre,
+      distrito: c.properties.distrito,
+      region: c.properties.region
+    } as Comuna));
+
     electionNames = Object.keys($elections);
-    comunaNames = comunas.features.map(comuna => comuna.properties.nombre);
+    comunaNames = comunasFeatures.features.map(comuna => comuna.properties.nombre);
     loading = false;
   });
 </script>
@@ -42,11 +47,11 @@
     <Loading />
   </div>
   {/if}
-  <Form {electionNames} {comunaNames}/>
+  <Form {electionNames} {comunas}/>
   <ElectoralMap
     bind:data={$selectedElectionOutcomes}
     bind:percentageResults={$percentageResults}
-    {comunas}
+    comunas={comunasFeatures}
   />
 </main>
 
