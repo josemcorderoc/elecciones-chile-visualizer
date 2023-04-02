@@ -7,6 +7,8 @@
         selectedComunaNames,
         candidateNamesAutocomplete,
         percentageResults,
+        loadingQuery,
+        loadingComunasGeoJSON,
     } from "../state";
     import type { Comuna } from "../types";
 
@@ -83,6 +85,7 @@
             placeholder={"Ingresa uno o más territorios (comunas, distritos, regiones)"}
             onlyAutocomplete
             onlyUnique
+            bind:disable={$loadingComunasGeoJSON}
         />
     </div>
 
@@ -95,6 +98,7 @@
             maxTags={1}
             onlyAutocomplete
             onlyUnique
+            bind:disable={$loadingQuery}
         />
     </div>
 

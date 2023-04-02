@@ -8,7 +8,11 @@
 
     export let data: ElectionOutcome[] = [];
     export let percentageResults = false;
-    export let comunas: FeatureCollection;
+    export let comunas: FeatureCollection = {
+        type: 'FeatureCollection',
+        features: [],
+    };
+;
 
     let map: L.Map; 
 
@@ -26,6 +30,7 @@
 
     function renderElectionOutcome(params, map) {
         if (params.data.length == 0) return [null, null, null];
+        if (comunas.features.length == 0) return [null, null, null];
 
         const comunasGeoJSON = getVotesComunasGeoJSON(params.data, params.colorScale, comunas, percentageResults);
         comunasGeoJSON.addTo(map);

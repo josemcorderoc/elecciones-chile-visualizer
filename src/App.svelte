@@ -8,15 +8,16 @@
   import {
     selectedElectionOutcomes,
     percentageResults,
+    loadingComunasGeoJSON,
+    loadingShowInUI
   } from "./lib/state";
   import type { Comuna } from "./lib/types";
 
   let comunasFeatures: FeatureCollection;
-  let comunaNames: string[];
-  let loading = true;
   let comunas: Comuna[];
 
   onMount(async () => {
+    $loadingComunasGeoJSON = true;
     comunasFeatures = await fetch(
         "https://elecciones-chile-visualizer-1.s3.sa-east-1.amazonaws.com/data/comunas.json.gz"
       ).then((response) => response.json()
@@ -27,21 +28,20 @@
       distrito: c.properties.distrito,
       region: c.properties.region
     } as Comuna));
-
-    comunaNames = comunasFeatures.features.map(comuna => comuna.properties.nombre);
-    loading = false;
+    $loadingComunasGeoJSON = false;
   });
 </script>
 
 <main>
   <h1>Elecciones Chile Visualizer</h1>
 
-  {#if loading}
+  
+  <Form {electionNames} {comunas}/>
+  {#if $loadingShowInUI}
   <div class="my-2">
     <Loading />
   </div>
   {/if}
-  <Form {electionNames} {comunas}/>
   <ElectoralMap
     bind:data={$selectedElectionOutcomes}
     bind:percentageResults={$percentageResults}

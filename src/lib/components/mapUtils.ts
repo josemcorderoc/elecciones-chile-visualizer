@@ -5,6 +5,7 @@ import { formatVotes } from "../utils";
 
 export function getVotesComunasGeoJSON(electionData: ElectionOutcome[], colorScale, comunas, percentageResults) {
     if (electionData.length == 0) return L.geoJSON();
+    if (comunas.length == 0) return L.geoJSON();
 
     const comunasToMap = [];
     for (const outcome of electionData) {

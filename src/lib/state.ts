@@ -2,12 +2,22 @@ import { writable, derived } from 'svelte/store';
 import type { ElectionOutcome } from './types';
 import colormap from 'colormap';
 import { electionsApiUrl } from './constants';
-
+export const loadingComunasGeoJSON = writable<boolean>(false);
+export const loadingQuery = writable<boolean>(false);
 export const selectedElectionNames = writable<string[]>([]);
 export const selectedCandidateNames = writable<string[]>([]);
 export const selectedComunaNames = writable<string[]>([]);
 export const percentageResults = writable<boolean>(false);
 
+export const loadingShowInUI = derived(
+    [selectedElectionNames, selectedComunaNames, loadingComunasGeoJSON, loadingQuery],
+    ([$a, $b, $c, $d]) => {
+        if ($a.length == 0) return false;
+        if ($b.length == 0) return $c;
+        return $d;
+    },
+    false
+)
 export const electionOutcomesElectionComunaTotal = derived<any, ElectionOutcome[]>(
     [selectedElectionNames, selectedComunaNames],
     ([$a, $b], set) => {
@@ -53,9 +63,13 @@ async function getElectionOutcomes(
     console.log(selectedElections)
     console.log(selectedComunas)
     console.log(selectedCandidates)
+    console.log("loading true")
+    loadingQuery.set(true)
     console.log("API HIT")
     const response = await fetch(`${electionsApiUrl}/votes?${queryParams.toString()}`)
     .then((response) => {
+        console.log("loading false")
+        loadingQuery.set(false)
         if (!response.ok) {
           throw new Error('There was an error in the request');
         }
