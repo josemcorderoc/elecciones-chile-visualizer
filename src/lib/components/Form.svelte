@@ -46,10 +46,16 @@
     $: territoriosMap = getTerritorios(comunas);
     $: territorioNames = Array.from(territoriosMap.keys()).sort();
     
+    function getComunasNamesFromTerritorioNames(territorioNames: string[], territoriosMap: Map<string, Set<string>>) {
+        const comunas = territorioNames.map(t => territoriosMap.get(t));
+        return [...new Set(comunas.reduce((acc, curr) => [...acc, ...curr], []))];
+    }
     // logic to work with strings and avoid double reativity,
     // see https://github.com/sveltejs/svelte/issues/4265
     $: selectedTerritorioNamesStr = selectedTerritorioNames.join(",")
-    $: $selectedComunaNames = selectedTerritorioNamesStr.length > 0 ? selectedTerritorioNamesStr.split(",") : []
+    $: $selectedComunaNames = selectedTerritorioNamesStr.length > 0
+            ? getComunasNamesFromTerritorioNames(selectedTerritorioNamesStr.split(","), territoriosMap)
+            : []
     
 </script>
 
