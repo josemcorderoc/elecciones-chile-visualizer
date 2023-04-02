@@ -23,3 +23,7 @@ export const electionNames = [
     'Senadores 2017',
     'Senadores 2021'
 ]
+
+export const electionsApiUrl = import.meta.env.MODE === 'production'
+                    ? import.meta.env.VITE_API_URL_PROD
+                    : import.meta.env.VITE_API_URL_DEBUG;

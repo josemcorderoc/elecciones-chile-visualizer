@@ -1,6 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import type { ElectionOutcome } from './types';
 import colormap from 'colormap';
+import { electionsApiUrl } from './constants';
 
 export const selectedElectionNames = writable<string[]>([]);
 export const selectedCandidateNames = writable<string[]>([]);
@@ -53,7 +54,7 @@ async function getElectionOutcomes(
     console.log(selectedComunas)
     console.log(selectedCandidates)
     console.log("API HIT")
-    const response = await fetch(`http://localhost:8080/votes?${queryParams.toString()}`)
+    const response = await fetch(`${electionsApiUrl}/votes?${queryParams.toString()}`)
     .then((response) => {
         if (!response.ok) {
           throw new Error('There was an error in the request');
