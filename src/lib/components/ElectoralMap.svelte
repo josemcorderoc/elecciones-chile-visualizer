@@ -7,15 +7,15 @@
     import type { FeatureCollection } from "geojson";
 
     export let data: ElectionOutcome[] = [];
-    export let percentageResults: boolean;
+    export let percentageResults = false;
     export let comunas: FeatureCollection;
 
-    let map: L.Map;
+    let map: L.Map; 
 
     $: mapParams = {
         data,
-        percentageResults: percentageResults,
-        colorScale: generateColorScale(data.map(e => e.votes), $colorPalette)
+        percentageResults,
+        colorScale: generateColorScale(data.map(e => percentageResults ? e.PercVotes/100 : e.Votes), $colorPalette)
     }
 
     function removeMapItems(map, geojson, legend, hover) {
@@ -27,7 +27,7 @@
     function renderElectionOutcome(params, map) {
         if (params.data.length == 0) return [null, null, null];
 
-        const comunasGeoJSON = getVotesComunasGeoJSON(params.data, params.colorScale, comunas);
+        const comunasGeoJSON = getVotesComunasGeoJSON(params.data, params.colorScale, comunas, percentageResults);
         comunasGeoJSON.addTo(map);
         
         map.fitBounds(comunasGeoJSON.getBounds());

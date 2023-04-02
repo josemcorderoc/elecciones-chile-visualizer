@@ -13,6 +13,7 @@
     export let electionNames: string[];
     export let comunas: Comuna[] = [];
     let selectedTerritorioNames: string[] = [];
+    let selectedTerritorioNamesStr: string = "";
 
     function getTerritorios(comunasTotal: Comuna[]){        
         const comunasMap = new Map<string, Set<string>>();
@@ -41,16 +42,15 @@
         });
         return new Map([...comunasMap, ...distritosMap, ...regionesMap]);
     }
-    
-    
-    function getComunasNamesFromTerritorioNames(territorioNames: string[], territoriosMap: Map<string, Set<string>>) {
-        const comunas = territorioNames.map(t => territoriosMap.get(t));
-        return [...new Set(comunas.reduce((acc, curr) => [...acc, ...curr], []))];
-    }
 
     $: territoriosMap = getTerritorios(comunas);
     $: territorioNames = Array.from(territoriosMap.keys()).sort();
-    $: $selectedComunaNames = getComunasNamesFromTerritorioNames(selectedTerritorioNames, territoriosMap);
+    
+    // logic to work with strings and avoid double reativity,
+    // see https://github.com/sveltejs/svelte/issues/4265
+    $: selectedTerritorioNamesStr = selectedTerritorioNames.join(",")
+    $: $selectedComunaNames = selectedTerritorioNamesStr.length > 0 ? selectedTerritorioNamesStr.split(",") : []
+    
 </script>
 
 <div class="election-form">
@@ -69,6 +69,7 @@
     <div>
         <Tags
             bind:tags={selectedTerritorioNames}
+            on:update:tags={() => console.log("AAA")}
             autoComplete={territorioNames}
             addKeys={[9, 13]}
             placeholder={"Ingresa uno o más territorios (comunas, distritos, regiones)"}
