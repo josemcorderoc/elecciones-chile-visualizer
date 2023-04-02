@@ -15,7 +15,9 @@
     let selectedTerritorioNames: string[] = [];
     let selectedTerritorioNamesStr: string = "";
 
-    function getTerritorios(comunasTotal: Comuna[]){        
+    function getTerritorios(comunasTotal: Comuna[]){
+        // maps keys contains the territory name and the value
+        // is a set with comuna names
         const comunasMap = new Map<string, Set<string>>();
         const distritosMap = new Map<string, Set<string>>();
         const regionesMap = new Map<string, Set<string>>();
