@@ -24,12 +24,12 @@ export const electionNames = [
     'Senadores 2021'
 ]
 
-export const electionsApiUrl = import.meta.env.MODE === 'production'
+export const electionsApiHost = import.meta.env.MODE === 'production'
                     ? import.meta.env.VITE_API_URL_PROD
                     : import.meta.env.VITE_API_URL_DEBUG;
 
 export const partidosApiEndpoint = import.meta.env.VITE_API_ENDPOINT_PARTIDOS
 export const candidatosApiEndpoint = import.meta.env.VITE_API_ENDPOINT_CANDIDATOS
 
-export const partidosApiUrl = `${electionsApiUrl}/${partidosApiEndpoint}`
-export const candidatosApiUrl = `${electionsApiUrl}/${candidatosApiEndpoint}`
+export const partidosApiUrl = `${electionsApiHost}/${partidosApiEndpoint}`
+export const candidatosApiUrl = `${electionsApiHost}/${candidatosApiEndpoint}`

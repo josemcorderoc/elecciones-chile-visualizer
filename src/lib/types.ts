@@ -1,6 +1,6 @@
 export type ElectionOutcome = {
     ElectionName: string,
-    CandidateName: string,
+    EntityName: string,
     ComunaName: string,
     Votes: number,
     PercVotes: number

@@ -9,6 +9,7 @@
         percentageResults,
         loadingQuery,
         loadingComunasGeoJSON,
+        partyTypeResults,
     } from "../state";
     import type { Comuna } from "../types";
 
@@ -65,6 +66,25 @@
 
 <div class="election-form">
     <div>
+        <div class="mt-5 mb-1 ml-2">
+            Candidatos
+            <Switch
+                bind:checked={$partyTypeResults}
+                onColor="#888888"
+                handleDiameter={15}
+                unCheckedIcon={false}
+                boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                height={10}
+                width={30}
+                id="apiType-switch"
+            >
+                <span slot="checkedIcon" />
+                <span slot="unCheckedIcon" />
+            </Switch>
+            Partidos
+
+        </div>
         <Tags
             bind:tags={$selectedElectionNames}
             autoComplete={electionNames}
@@ -94,7 +114,7 @@
             bind:tags={$selectedCandidateNames}
             autoComplete={$candidateNamesAutocomplete}
             addKeys={[9, 13]}
-            placeholder={"Ingresa un candidato"}
+            placeholder={`Ingresa un ${$partyTypeResults ? "partido" : "candidato"}`}
             maxTags={1}
             onlyAutocomplete
             onlyUnique
