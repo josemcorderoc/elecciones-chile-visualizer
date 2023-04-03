@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import type { ElectionOutcome } from './types';
 import colormap from 'colormap';
-import { electionsApiUrl } from './constants';
+import { candidatosApiUrl, electionsApiUrl } from './constants';
 export const loadingComunasGeoJSON = writable<boolean>(false);
 export const loadingQuery = writable<boolean>(false);
 export const selectedElectionNames = writable<string[]>([]);
@@ -54,24 +54,18 @@ async function getElectionOutcomes(
 
     const queryParams = new URLSearchParams({
         eleccion_name: selectedElections[0],
-        candidato_name: selectedCandidates[0]
+        candidato_name: selectedCandidates[0],
+        comuna_names: selectedComunas.join(",")
       });
 
-    selectedComunas.forEach(
-        comuna => queryParams.append("comuna_names", comuna)
-    )
-    console.log(selectedElections)
-    console.log(selectedComunas)
-    console.log(selectedCandidates)
-    console.log("loading true")
     loadingQuery.set(true)
-    console.log("API HIT")
-    const response = await fetch(`${electionsApiUrl}/votes?${queryParams.toString()}`)
+
+    const queryUrl = `${candidatosApiUrl}?${queryParams.toString()}`
+    const response = await fetch(queryUrl)
     .then((response) => {
-        console.log("loading false")
         loadingQuery.set(false)
         if (!response.ok) {
-          throw new Error('There was an error in the request');
+          throw new Error(`There was an error ${response.status} in the request: ${response.statusText}`);
         }
         return response.json();
       })
