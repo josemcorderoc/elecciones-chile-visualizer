@@ -3,15 +3,16 @@ import { getColor } from "../colorScale";
 import type { ElectionOutcome } from "../types";
 import { formatVotes } from "../utils";
 
-export function getVotesComunasGeoJSON(electionData: ElectionOutcome[], colorScale, comunas) {
+export function getVotesComunasGeoJSON(electionData: ElectionOutcome[], colorScale, comunas, percentageResults) {
     if (electionData.length == 0) return L.geoJSON();
+    if (comunas.length == 0) return L.geoJSON();
 
     const comunasToMap = [];
     for (const outcome of electionData) {
-        let comunaMatch = comunas.features.find(comuna => comuna.properties.nombre == outcome.comuna);
+        let comunaMatch = comunas.features.find(comuna => comuna.properties.nombre == outcome.ComunaName);
         if (comunaMatch) {
             comunaMatch = Object.assign({}, comunaMatch);
-            comunaMatch.properties.votos = outcome.votes;
+            comunaMatch.properties.votos = percentageResults ? outcome.PercVotes/100 : outcome.Votes;
             comunasToMap.push(comunaMatch);
         }
 
@@ -55,7 +56,6 @@ export function createMapHoverInfo(electionName, percentageResults) {
     return new HoverControl();
 
 }
-// $selectedElectionNames[0]
 
 export function createMapLegend(percentageResults, colorScale) {
     const LegendControl = L.Control.extend({

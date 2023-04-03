@@ -7,14 +7,19 @@
         selectedComunaNames,
         candidateNamesAutocomplete,
         percentageResults,
+        loadingQuery,
+        loadingComunasGeoJSON,
     } from "../state";
     import type { Comuna } from "../types";
 
     export let electionNames: string[];
     export let comunas: Comuna[] = [];
     let selectedTerritorioNames: string[] = [];
+    let selectedTerritorioNamesStr: string = "";
 
-    function getTerritorios(comunasTotal: Comuna[]){        
+    function getTerritorios(comunasTotal: Comuna[]){
+        // maps keys contains the territory name and the value
+        // is a set with comuna names
         const comunasMap = new Map<string, Set<string>>();
         const distritosMap = new Map<string, Set<string>>();
         const regionesMap = new Map<string, Set<string>>();
@@ -41,16 +46,21 @@
         });
         return new Map([...comunasMap, ...distritosMap, ...regionesMap]);
     }
-    
+
+    $: territoriosMap = getTerritorios(comunas);
+    $: territorioNames = Array.from(territoriosMap.keys()).sort();
     
     function getComunasNamesFromTerritorioNames(territorioNames: string[], territoriosMap: Map<string, Set<string>>) {
         const comunas = territorioNames.map(t => territoriosMap.get(t));
         return [...new Set(comunas.reduce((acc, curr) => [...acc, ...curr], []))];
     }
-
-    $: territoriosMap = getTerritorios(comunas);
-    $: territorioNames = Array.from(territoriosMap.keys()).sort();
-    $: $selectedComunaNames = getComunasNamesFromTerritorioNames(selectedTerritorioNames, territoriosMap);
+    // logic to work with strings and avoid double reativity,
+    // see https://github.com/sveltejs/svelte/issues/4265
+    $: selectedTerritorioNamesStr = selectedTerritorioNames.join(",")
+    $: $selectedComunaNames = selectedTerritorioNamesStr.length > 0
+            ? getComunasNamesFromTerritorioNames(selectedTerritorioNamesStr.split(","), territoriosMap)
+            : []
+    
 </script>
 
 <div class="election-form">
@@ -69,11 +79,13 @@
     <div>
         <Tags
             bind:tags={selectedTerritorioNames}
+            on:update:tags={() => console.log("AAA")}
             autoComplete={territorioNames}
             addKeys={[9, 13]}
             placeholder={"Ingresa uno o más territorios (comunas, distritos, regiones)"}
             onlyAutocomplete
             onlyUnique
+            bind:disable={$loadingComunasGeoJSON}
         />
     </div>
 
@@ -86,6 +98,7 @@
             maxTags={1}
             onlyAutocomplete
             onlyUnique
+            bind:disable={$loadingQuery}
         />
     </div>
 
