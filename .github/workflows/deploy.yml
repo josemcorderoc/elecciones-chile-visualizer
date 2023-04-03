@@ -27,6 +27,12 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+            VITE_API_URL_DEBUG: http://localhost:7071
+            VITE_API_URL_PROD: http://elecciones-chilea-api-v3.azurewebsites.net
+            VITE_API_ENDPOINT_CANDIDATOS: api/EleccionesChileCandidato
+            VITE_API_ENDPOINT_PARTIDOS: api/EleccionesChilePartido
+
 
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v2
