@@ -3,18 +3,18 @@
     import Switch from "svelte-switch";
     import {
         selectedElectionNames,
-        selectedCandidateNames,
+        selectedEntityNames,
         selectedComunaNames,
         candidateNamesAutocomplete,
         percentageResults,
         loadingQuery,
         loadingComunasGeoJSON,
-        partyTypeResults,
+        candidateTypeResults,
+        comunas,
     } from "../state";
     import type { Comuna } from "../types";
 
     export let electionNames: string[];
-    export let comunas: Comuna[] = [];
     let selectedTerritorioNames: string[] = [];
     let selectedTerritorioNamesStr: string = "";
 
@@ -48,7 +48,7 @@
         return new Map([...comunasMap, ...distritosMap, ...regionesMap]);
     }
 
-    $: territoriosMap = getTerritorios(comunas);
+    $: territoriosMap = getTerritorios($comunas);
     $: territorioNames = Array.from(territoriosMap.keys()).sort();
     
     function getComunasNamesFromTerritorioNames(territorioNames: string[], territoriosMap: Map<string, Set<string>>) {
@@ -67,9 +67,9 @@
 <div class="election-form">
     <div>
         <div class="mt-5 mb-1 ml-2">
-            Candidatos
+            Partidos
             <Switch
-                bind:checked={$partyTypeResults}
+                bind:checked={$candidateTypeResults}
                 onColor="#888888"
                 handleDiameter={15}
                 unCheckedIcon={false}
@@ -82,7 +82,7 @@
                 <span slot="checkedIcon" />
                 <span slot="unCheckedIcon" />
             </Switch>
-            Partidos
+            Candidatos
 
         </div>
         <Tags
@@ -92,14 +92,12 @@
             placeholder={"Ingresa una elección"}
             onlyAutocomplete
             onlyUnique
-            maxTags={1}
         />
     </div>
 
     <div>
         <Tags
             bind:tags={selectedTerritorioNames}
-            on:update:tags={() => console.log("AAA")}
             autoComplete={territorioNames}
             addKeys={[9, 13]}
             placeholder={"Ingresa uno o más territorios (comunas, distritos, regiones)"}
@@ -111,10 +109,10 @@
 
     <div>
         <Tags
-            bind:tags={$selectedCandidateNames}
+            bind:tags={$selectedEntityNames}
             autoComplete={$candidateNamesAutocomplete}
             addKeys={[9, 13]}
-            placeholder={`Ingresa un ${$partyTypeResults ? "partido" : "candidato"}`}
+            placeholder={`Ingresa un ${$candidateTypeResults ? "candidato" : "partido"}`}
             maxTags={1}
             onlyAutocomplete
             onlyUnique

@@ -1,19 +1,37 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, readable } from 'svelte/store';
 import colormap from 'colormap';
 import { candidatosApiUrl, partidosApiUrl } from './constants';
-import type { ElectionOutcome } from './types';
+import type { Comuna, ElectionOutcome } from './types';
+import type { FeatureCollection } from 'geojson';
 export const loadingComunasGeoJSON = writable<boolean>(false);
+export const comunasFeatures = readable(<FeatureCollection>{
+    type: "FeatureCollection",
+    features: [],
+}, function start(set){
+    fetch("https://elecciones-chile-visualizer-1.s3.sa-east-1.amazonaws.com/data/comunas.json.gz")
+    .then(res => res.json())
+    .then(res => set(res));
+})
+export const comunas = derived(
+    [comunasFeatures],
+    ([$a]) => ($a.features.map(c => ({
+            nombre: c.properties.nombre,
+            distrito: c.properties.distrito,
+            region: c.properties.region
+        } as Comuna)))
+);
+
 export const loadingQuery = writable<boolean>(false);
 export const selectedElectionNames = writable<string[]>([]);
-export const selectedCandidateNames = writable<string[]>([]);
+export const selectedEntityNames = writable<string[]>([]);
 export const selectedComunaNames = writable<string[]>([]);
 export const percentageResults = writable<boolean>(false);
 
-export const partyTypeResults = writable<boolean>(false);
+export const candidateTypeResults = writable<boolean>(false);
 
 export const selectedApiUrl = derived(
-    [partyTypeResults],
-    ([$a]) => $a ? partidosApiUrl : candidatosApiUrl 
+    [candidateTypeResults],
+    ([$a]) => $a ? candidatosApiUrl : partidosApiUrl 
 )
 
 export const loadingShowInUI = derived(
@@ -39,7 +57,7 @@ export const candidateNamesAutocomplete = derived(
 );
 
 export const selectedElectionOutcomes = derived(
-    [electionOutcomesElectionComunaTotal, selectedCandidateNames],
+    [electionOutcomesElectionComunaTotal, selectedEntityNames],
     ([$a, $b]) => $a.filter(outcome => $b.includes(outcome.EntityName)),
     []
 );
@@ -61,8 +79,8 @@ async function getElectionOutcomes(
     }
 
     const queryParams = new URLSearchParams({
-        eleccion_name: selectedElections[0],
-        candidato_name: selectedCandidates[0],
+        eleccion_name: selectedElections.join(","),
+        candidato_name: selectedCandidates.join(","),
         comuna_names: selectedComunas.join(",")
       });
 
