@@ -1,43 +1,39 @@
 <script lang="ts">
     import L from "leaflet";
     import type { ElectionOutcome } from "../types";
-    import { colorPalette, selectedElectionNames } from "../state";
+    import { colorPalette, comunasFeatures } from "../state";
     import { generateColorScale } from "../colorScale";
-    import { createMapHoverInfo, createMapLegend, getFeatureStyle, getVotesComunasGeoJSON } from "./mapUtils";
-    import type { FeatureCollection } from "geojson";
-
+    import { createMapHoverInfo, createMapLegend, getVotesComunasGeoJSON } from "./mapUtils";
+    
+    export let electionName = "";
     export let data: ElectionOutcome[] = [];
     export let percentageResults = false;
-    export let comunas: FeatureCollection = {
-        type: 'FeatureCollection',
-        features: [],
-    };
-;
 
     let map: L.Map; 
-
+    $: colorScale = generateColorScale(data.map(e => percentageResults ? e.PercVotes/100 : e.Votes), $colorPalette)
     $: mapParams = {
         data,
         percentageResults,
-        colorScale: generateColorScale(data.map(e => percentageResults ? e.PercVotes/100 : e.Votes), $colorPalette)
+        colorScale
     }
 
-    function removeMapItems(map, geojson, legend, hover) {
+    function removeMapItems(map: L.Map, geojson, legend, hover) {
         if (legend) map.removeControl(legend);
         if (hover) map.removeControl(hover);
         if (geojson) geojson.removeFrom(map);
     }
 
-    function renderElectionOutcome(params, map) {
+    function renderElectionOutcome(params, map: L.Map) {
+        map.invalidateSize();
         if (params.data.length == 0) return [null, null, null];
-        if (comunas.features.length == 0) return [null, null, null];
+        if ($comunasFeatures.features.length == 0) return [null, null, null];
 
-        const comunasGeoJSON = getVotesComunasGeoJSON(params.data, params.colorScale, comunas, percentageResults);
+        const comunasGeoJSON = getVotesComunasGeoJSON(params.data, params.colorScale, $comunasFeatures, percentageResults);
         comunasGeoJSON.addTo(map);
         
         map.fitBounds(comunasGeoJSON.getBounds());
         
-        const hover = createMapHoverInfo($selectedElectionNames[0], percentageResults);
+        const hover = createMapHoverInfo(electionName, percentageResults);
         hover.addTo(map);
         // const legend = new legendControl({position: 'bottomright'});
         const legend = createMapLegend(percentageResults, params.colorScale)
@@ -119,9 +115,9 @@
 
 <style>
     #map {
-        height: 500px;
-        text-align: center;
-        /* z-index: -1; */
+        height: 400px;
+        max-width: 100%;
+        margin: auto;
     }
     div :global(.info) {
         padding: 6px 8px;
