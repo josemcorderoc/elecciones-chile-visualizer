@@ -79,8 +79,8 @@ async function getElectionOutcomes(
     }
 
     const queryParams = new URLSearchParams({
-        eleccion_name: selectedElections.join(","),
-        candidato_name: selectedCandidates.join(","),
+        eleccion_names: selectedElections.join(","),
+        candidato_names: selectedCandidates.join(","),
         comuna_names: selectedComunas.join(",")
       });
 
