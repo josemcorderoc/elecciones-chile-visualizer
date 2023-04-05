@@ -89,7 +89,7 @@
             bind:tags={$selectedElectionNames}
             autoComplete={electionNames}
             addKeys={[9, 13]}
-            placeholder={"Ingresa una elección"}
+            placeholder={"Ingresa una o más elecciones"}
             onlyAutocomplete
             onlyUnique
         />
