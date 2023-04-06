@@ -11,6 +11,7 @@
         loadingComunasGeoJSON,
         candidateTypeResults,
         comunas,
+        tableView,
     } from "../state";
     import type { Comuna } from "../types";
 
@@ -83,6 +84,40 @@
                 <span slot="unCheckedIcon" />
             </Switch>
             Candidatos
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp
+            Votos
+            <Switch
+                bind:checked={$percentageResults}
+                onColor="#888888"
+                handleDiameter={15}
+                unCheckedIcon={false}
+                boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                height={10}
+                width={30}
+                id="percentage-switch"
+            >
+                <span slot="checkedIcon" />
+                <span slot="unCheckedIcon" />
+            </Switch>
+            %
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp
+            Mapa
+            <Switch
+                bind:checked={$tableView}
+                onColor="#888888"
+                handleDiameter={15}
+                unCheckedIcon={false}
+                boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                height={10}
+                width={30}
+                id="percentage-switch"
+            >
+                <span slot="checkedIcon" />
+                <span slot="unCheckedIcon" />
+            </Switch>
+            Tabla
 
         </div>
         <Tags
@@ -121,28 +156,13 @@
     </div>
 
     <div class="mt-1 ml-2">
-        Votos
-        <Switch
-            bind:checked={$percentageResults}
-            onColor="#888888"
-            handleDiameter={15}
-            unCheckedIcon={false}
-            boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
-            activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
-            height={10}
-            width={30}
-            id="percentage-switch"
-        >
-            <span slot="checkedIcon" />
-            <span slot="unCheckedIcon" />
-        </Switch>
-        %
+        
     </div>
 </div>
 
 <style>
     .election-form {
-        width: 0;
+        /* width: 0; */
         min-width: 100%;
         /* max-width: 500px;    */
         display:inline-block;
