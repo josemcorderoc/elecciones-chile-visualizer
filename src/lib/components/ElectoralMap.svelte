@@ -24,7 +24,7 @@
     }
 
     function renderElectionOutcome(params, map: L.Map) {
-        map.invalidateSize();
+        // map.invalidateSize();
         if (params.data.length == 0) return [null, null, null];
         if ($comunasFeatures.features.length == 0) return [null, null, null];
 
