@@ -1,3 +1,5 @@
+import type { FeatureCollection } from "geojson";
+
 export const electionNames = [
     'CORE 2013',
     'CORE 2017',
@@ -33,3 +35,8 @@ export const candidatosApiEndpoint = import.meta.env.VITE_API_ENDPOINT_CANDIDATO
 
 export const partidosApiUrl = `${electionsApiHost}/${partidosApiEndpoint}`
 export const candidatosApiUrl = `${electionsApiHost}/${candidatosApiEndpoint}`
+
+export let comunasGeoJSONUrl = import.meta.env.MODE == 'production'
+                                 ? "https://elecciones-chile-visualizer-1.s3.sa-east-1.amazonaws.com/data/comunas.json.gz"
+                                 : new URL("../assets/comunas.json", import.meta.url).href;
+    

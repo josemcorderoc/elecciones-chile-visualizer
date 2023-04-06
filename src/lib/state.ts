@@ -1,6 +1,6 @@
 import { writable, derived, readable } from 'svelte/store';
 import colormap from 'colormap';
-import { candidatosApiUrl, partidosApiUrl } from './constants';
+import { candidatosApiUrl, comunasGeoJSONUrl, partidosApiUrl } from './constants';
 import type { Comuna, ElectionOutcome } from './types';
 import type { FeatureCollection } from 'geojson';
 export const loadingComunasGeoJSON = writable<boolean>(false);
@@ -8,7 +8,7 @@ export const comunasFeatures = readable(<FeatureCollection>{
     type: "FeatureCollection",
     features: [],
 }, function start(set){
-    fetch("https://elecciones-chile-visualizer-1.s3.sa-east-1.amazonaws.com/data/comunas.json.gz")
+    fetch(comunasGeoJSONUrl)
     .then(res => res.json())
     .then(res => set(res));
 })
@@ -27,6 +27,7 @@ export const selectedEntityNames = writable<string[]>([]);
 export const selectedComunaNames = writable<string[]>([]);
 export const percentageResults = writable<boolean>(false);
 
+export const tableView = writable<boolean>(false);
 export const candidateTypeResults = writable<boolean>(false);
 
 export const selectedApiUrl = derived(
