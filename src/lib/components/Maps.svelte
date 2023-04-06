@@ -23,9 +23,15 @@
     }
 </script>
 
+
+
+{#if electionNames.length == 0}
+<div class="col-auto">
+    <ElectoralMap/>
+</div>
+{/if}
 <div class="grid grid-cols-auto gap-4 grid-flow-col auto-cols-auto">
     {#each electionNames as electionName}
-        
         <div class="col-auto">
             <ElectoralMap
                 {electionName}
